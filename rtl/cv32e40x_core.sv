@@ -21,11 +21,11 @@
 //                 Øystein Knauserud - oystein.knauserud@silabs.com           //
 //                 Michael Platzer - michael.platzer@tuwien.ac.at             //
 //                                                                            //
-// Design Name:    Top level module                                           //
+// Design Name:    Top level mod                                           //
 // Project Name:   RI5CY                                                      //
 // Language:       SystemVerilog                                              //
 //                                                                            //
-// Description:    Top level module of the RISC-V core.                       //
+// Description:    Top level mod of the RISC-V core.                       //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -170,6 +170,10 @@ module cv32e40x_core import cv32e40x_pkg::*;
   logic        lsu_bus_busy;   // LSU has outstanding transactions on the OBI bus
   logic        lsu_interruptible;
 
+
+  // SCAIEV internal interface
+  scaiev_interface scaiev();
+
   // ID/EX pipeline
   id_ex_pipe_t id_ex_pipe;
 
@@ -275,7 +279,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
   logic        lsu_valid_wb;
   logic        lsu_ready_1;
 
-  // LSU signals to trigger module
+  // LSU signals to trigger mod
   logic [31:0] lsu_addr_ex;
   logic        lsu_we_ex;
   logic [3:0]  lsu_be_ex;
@@ -310,13 +314,13 @@ module cv32e40x_core import cv32e40x_pkg::*;
   // From cs_registers
   dcsr_t       dcsr;
 
-  // trigger match detected in trigger module (using IF timing)
+  // trigger match detected in trigger mod (using IF timing)
   // One bit per trigger (max 32 triggers)
   logic [31:0] trigger_match_if;
-  // trigger match detected in trigger module (using EX/LSU timing)
+  // trigger match detected in trigger mod (using EX/LSU timing)
   // One bit per trigger (max 32 triggers)
   logic [31:0] trigger_match_ex;
-  // trigger match detected in trigger module (using WB timing, etrigger)
+  // trigger match detected in trigger mod (using WB timing, etrigger)
   logic        etrigger_wb;
 
   // Controller <-> decoder
@@ -510,7 +514,10 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // eXtension interface
     .xif_compressed_if   ( xif_compressed_if        ),
-    .xif_offloading_id_i ( xif_offloading_id        )
+    .xif_offloading_id_i ( xif_offloading_id        ),
+
+    // SCAIEV internal interface
+    .scaiev              ( scaiev                   )
   );
 
   /////////////////////////////////////////////////
@@ -582,7 +589,10 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // eXtension interface
     .xif_issue_if                 ( xif_issue_if              ),
-    .xif_offloading_o             ( xif_offloading_id         )
+    .xif_offloading_o             ( xif_offloading_id         ),
+
+    // SCAIEV internal interface
+    .scaiev                       ( scaiev                    )
   );
 
   /////////////////////////////////////////////////////
@@ -642,7 +652,10 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .ex_ready_o                 ( ex_ready                     ),
     .ex_valid_o                 ( ex_valid                     ),
     .wb_ready_i                 ( wb_ready                     ),
-    .last_op_o                  ( last_op_ex                   )
+    .last_op_o                  ( last_op_ex                   ),
+
+    // SCAIEV internal interface
+    .scaiev                     ( scaiev                       )
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -694,7 +707,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .lsu_last_op_0_o       ( lsu_last_op_ex     ),
     .lsu_atomic_0_o        ( lsu_atomic_ex      ),
 
-    // Outputs to trigger module
+    // Outputs to trigger mod
     .lsu_addr_o            ( lsu_addr_ex        ),
     .lsu_we_o              ( lsu_we_ex          ),
     .lsu_be_o              ( lsu_be_ex          ),
@@ -784,7 +797,10 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .clic_pa_i                  ( csr_clic_pa                  ),
 
     .last_op_o                  ( last_op_wb                   ),
-    .abort_op_o                 ( abort_op_wb                  )
+    .abort_op_o                 ( abort_op_wb                  ),
+
+    // SCAIEV internal interface
+    .scaiev                     ( scaiev                       )
   );
 
   //////////////////////////////////////
@@ -983,7 +999,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .mintstatus_i                   ( mintstatus             ),
     .csr_hz_i                       ( csr_hz                 ),
 
-    // Trigger module
+    // Trigger mod
     .etrigger_wb_i                  ( etrigger_wb            ),
 
     // CSR write strobes
@@ -1146,6 +1162,14 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .we_i               ( rf_we       )
   );
 
+
+  cv32e40x_scaiev_unit scaiev_unit
+  (
+    .clk(clk),
+    .rst_n(rst_ni),
+
+    .scaiev(scaiev)
+  );
 
   // Some signals are unused on purpose (typically they are used by RVFI code). Use them here for easier LINT waiving.
   assign unused_signals = dbg_ack | irq_ack | (|irq_id) | (|irq_level) | (|irq_priv) | irq_shv;

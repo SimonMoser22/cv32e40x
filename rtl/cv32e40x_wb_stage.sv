@@ -85,7 +85,10 @@ module cv32e40x_wb_stage import cv32e40x_pkg::*;
   input logic           clic_pa_valid_i,
 
   output logic          last_op_o,
-  output logic          abort_op_o
+  output logic          abort_op_o,
+
+  // SCAIEV internal interface
+  scaiev_interface.core scaiev
 );
 
   logic                 instr_valid;
@@ -235,5 +238,13 @@ module cv32e40x_wb_stage import cv32e40x_pkg::*;
   // todo:XIF Handle xif_result_if.result.err as NMI (do not factor into xif_exception as that signal is for synchronous exceptions)
 
   assign xif_result_if.result_ready = ex_wb_pipe_i.instr_valid && ex_wb_pipe_i.xif_en;
+
+
+  //---------------------------------------------------------------------------
+  // SCAIE-V interface
+  //---------------------------------------------------------------------------
+
+  assign scaiev.writeback_PC = ex_wb_pipe_i.pc;
+
 
 endmodule

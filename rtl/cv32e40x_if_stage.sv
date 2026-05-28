@@ -86,7 +86,10 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
 
   // eXtension interface
   cv32e40x_if_xif.cpu_compressed xif_compressed_if,      // XIF compressed interface
-  input  logic                   xif_offloading_id_i     // ID stage attempts to offload an instruction
+  input  logic                   xif_offloading_id_i,    // ID stage attempts to offload an instruction
+  
+  // SCAIEV internal interface
+  scaiev_interface.core scaiev
 );
 
   // ALBUF_DEPTH set to 3 as the alignment_buffer will need 3 entries to function correctly
@@ -534,6 +537,13 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
 
     end
   endgenerate
+
+
+  //---------------------------------------------------------------------------
+  // SCAIE-V interface
+  //---------------------------------------------------------------------------
+  
+  assign scaiev.fetch_PC = pc_if_o;
 
 
   // Some signals are unused on purpose. Use them here for easier LINT waiving.

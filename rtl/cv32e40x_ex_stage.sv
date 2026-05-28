@@ -79,7 +79,10 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   output logic        ex_valid_o,       // EX stage has valid (non-bubble) data for next stage
   input  logic        wb_ready_i,       // WB stage is ready for new data
 
-  output logic        last_op_o
+  output logic        last_op_o,
+
+  // SCAIEV internal interface
+  scaiev_interface.core scaiev
 );
 
   // Ready and valid signals
@@ -496,5 +499,12 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // instruction. In such case the result can be written into ex_wb_pipe_i.rf_wdata (as if the XIF
   // is a functional unit living in EX) and then typically a cycle later the result would get
   // written from ex_wb_pipe_i.rf_wdata into the registerfile.
+
+  
+  //---------------------------------------------------------------------------
+  // SCAIE-V interface
+  //---------------------------------------------------------------------------
+
+  assign scaiev.execute_PC = id_ex_pipe_i.pc;
 
 endmodule

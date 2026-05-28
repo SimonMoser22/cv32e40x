@@ -97,7 +97,10 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   // eXtension interface
   cv32e40x_if_xif.cpu_issue xif_issue_if,
-  output logic              xif_offloading_o
+  output logic              xif_offloading_o,
+
+  // SCAIEV internal interface
+  scaiev_interface.core scaiev
 );
 
   // Source/Destination register instruction index
@@ -788,5 +791,12 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
       assign unused_xif_signals = xif_insn_reject | (|rf_illegal_raddr);
     end
   endgenerate
+
+
+  //---------------------------------------------------------------------------
+  // SCAIE-V interface
+  //---------------------------------------------------------------------------
+  
+  assign scaiev.decode_PC = if_id_pipe_i.pc;
 
 endmodule
