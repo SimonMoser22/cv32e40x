@@ -99,7 +99,9 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   input  ctrl_fsm_t     ctrl_fsm_i,             // Control signal from controller_fsm
 
   // Table jump related signals
-  input  logic          tbljmp_first_i          // Currently decoding first operation of a table jump
+  input  logic          tbljmp_first_i,         // Currently decoding first operation of a table jump
+
+  scaiev_interface.core scaiev
 );
 
   // write enable/request control
@@ -118,12 +120,14 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   logic dec_a_rf_illegal_addr;
   logic dec_b_rf_illegal_addr;
   logic dec_m_rf_illegal_addr;
+  logic dec_scaiev_rf_illegal_addr;
   logic rf_illegal_waddr;
 
   decoder_ctrl_t decoder_i_ctrl, decoder_i_ctrl_int;
   decoder_ctrl_t decoder_m_ctrl, decoder_m_ctrl_int;
   decoder_ctrl_t decoder_a_ctrl, decoder_a_ctrl_int;
   decoder_ctrl_t decoder_b_ctrl, decoder_b_ctrl_int;
+  decoder_ctrl_t decoder_scaiev_ctrl, decoder_scaiev_ctrl_int;
   decoder_ctrl_t decoder_ctrl_mux;
 
   assign instr_rdata = if_id_pipe_i.instr.bus_resp.rdata;
@@ -240,6 +244,28 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
     end
 
   endgenerate
+
+  //---------------------------------------------------------------------------
+  // SCAIE-V interface
+  //---------------------------------------------------------------------------
+
+  assign decoder_scaiev_ctrl_int = DECODER_CTRL_ILLEGAL_INSN;
+
+  assign decoder_scaiev_ctrl_int.alu_op_a_mux_sel = OP_A_REGA_OR_FWD;
+  assign decoder_scaiev_ctrl_int.alu_op_b_mux_sel = OP_B_REGB_OR_FWD;
+  assign decoder_scaiev_ctrl_int.illegal_insn = !scaiev.decode_isSCAIEV;
+  assign decoder_scaiev_ctrl_int.rf_re = scaiev.decode_isSCAIEV_usesRS1 || scaiev.decode_isSCAIEV_usesRS2;
+  assign decoder_scaiev_ctrl_int.rf_we = scaiev.decode_isSCAIEV_usesRD;
+  
+  
+
+  assign dec_scaiev_rf_illegal_addr = (scaiev.decode_isSCAIEV_usesRS1 && rf_illegal_raddr_o[0]) ||
+                                      (scaiev.decode_isSCAIEV_usesRS2 && rf_illegal_raddr_o[1]) ||
+                                      (scaiev.decode_isSCAIEV_usesRD && rf_illegal_waddr);
+
+  assign decoder_scaiev_ctrl = (dec_scaiev_rf_illegal_addr || if_id_pipe_i.illegal_c_insn) ?
+                               DECODER_CTRL_ILLEGAL_INSN :
+                               decoder_scaiev_ctrl_int;                                      
 
   // Mux control outputs from decoders
   always_comb

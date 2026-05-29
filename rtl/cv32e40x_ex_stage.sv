@@ -505,6 +505,6 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // SCAIE-V interface
   //---------------------------------------------------------------------------
 
-  assign scaiev.execute_PC = id_ex_pipe_i.pc;
+  
 
 endmodule

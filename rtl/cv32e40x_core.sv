@@ -743,6 +743,29 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .xif_mem_result_if     ( xif_mem_result_if  )
   );
 
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //    ____   ____    _    ___ _____   __     __  _   _ _   _ ___ _____   //
+  //   / ___| / ___|  / \  |_ _| ____|  \ \   / / | | | | \ | |_ _|_   _|  //
+  //   \___ \| |     / _ \  | ||  _| ____\ \ / /  | | | |  \| || |  | |    //
+  //    ___) | |___ / ___ \ | || |__|_____\ V /   | |_| | |\  || |  | |    //
+  //   |____/ \____/_/   \_\___|_____|     \_/     \___/|_| \_|___| |_|    //
+  //                                                                       //
+  ///////////////////////////////////////////////////////////////////////////
+
+
+  cv32e40x_scaiev_unit scaiev_unit
+  (
+    .clk(clk),
+    .rst_n(rst_ni),
+
+    .id_ex_pipe(id_ex_pipe),
+
+    .scaiev(scaiev)
+  );
+
+
   ////////////////////////////////////////////////////////////////////////////////////////
   // Write back stage                                                                   //
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1163,12 +1186,12 @@ module cv32e40x_core import cv32e40x_pkg::*;
   );
 
 
-  cv32e40x_scaiev_unit scaiev_unit
-  (
+  cv32e40x_scaiev_glue scaiev_glue (
     .clk(clk),
     .rst_n(rst_ni),
 
     .scaiev(scaiev)
+
   );
 
   // Some signals are unused on purpose (typically they are used by RVFI code). Use them here for easier LINT waiving.

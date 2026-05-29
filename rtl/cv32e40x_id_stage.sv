@@ -462,7 +462,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
     .ctrl_fsm_i                      ( ctrl_fsm_i                ),
 
     // Table jump related signals
-    .tbljmp_first_i                  ( tbljmp_first              )
+    .tbljmp_first_i                  ( tbljmp_first              ),
+
+    .scaiev                          ( scaiev                    )
   );
 
   generate
@@ -564,10 +566,10 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
         // Operands
         if (alu_op_a_mux_sel != OP_A_NONE) begin
-          id_ex_pipe_o.alu_operand_a        <= operand_a;               // Used by most ALU, CSR and LSU instructions
+          id_ex_pipe_o.alu_operand_a        <= operand_a;               // Used by most ALU, CSR, LSU and SCAIEV instructions
         end
         if (alu_op_b_mux_sel != OP_B_NONE) begin
-          id_ex_pipe_o.alu_operand_b        <= operand_b;               // Used by most ALU, CSR and LSU instructions
+          id_ex_pipe_o.alu_operand_b        <= operand_b;               // Used by most ALU, CSR, LSU and SCAIEV instructions
         end
 
         if (op_c_mux_sel != OP_C_NONE)
@@ -626,7 +628,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
           id_ex_pipe_o.sys_wfe_insn         <= sys_wfe_insn;
         end
 
-        id_ex_pipe_o.illegal_insn           <= illegal_insn && !xif_insn_accept;
+        id_ex_pipe_o.illegal_insn           <= illegal_insn && !xif_insn_accept; // && !decode_isSCAIEV => implicit in decode
+
+        //id_ex_pipe._o.scaiev_en = ( scaiev.decode_isSCAIEV)
 
         id_ex_pipe_o.rf_we                  <= rf_we;
         if (rf_we) begin
@@ -798,5 +802,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   //---------------------------------------------------------------------------
   
   assign scaiev.decode_PC = if_id_pipe_i.pc;
+  assign scaiev.decode_RS1 = operand_a_fw;
+  assign scaiev.decode_RS2 = operand_b_fw;
 
 endmodule
