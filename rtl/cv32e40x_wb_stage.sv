@@ -245,6 +245,7 @@ module cv32e40x_wb_stage import cv32e40x_pkg::*;
   //---------------------------------------------------------------------------
 
   assign scaiev.writeback_PC = ex_wb_pipe_i.pc;
+  assign scaiev.writeback_Instr = ex_wb_pipe_i.instr.bus_resp.rdata;
 
 
 endmodule

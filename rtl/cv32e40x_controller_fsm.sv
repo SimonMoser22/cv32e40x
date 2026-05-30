@@ -130,7 +130,10 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
   // eXtension interface
   cv32e40x_if_xif.cpu_commit xif_commit_if,
-  input                      xif_csr_error_i
+  input                      xif_csr_error_i,
+
+  // SCAIE-V internal interface
+  scaiev_interface.core scaiev
 );
 
    // FSM state encoding
@@ -1464,12 +1467,12 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
       //       with commit_kill=1 (pipeline is not killed as we need to handle the illegal instruction in WB)
       // Can only allow commit when older instructions are guaranteed to complete without exceptions
       //       - EX is halted if offloaded in WB can cause an exception, causing below to evaluate to 0.
-      assign xif_commit_if.commit_valid       = (!ctrl_fsm_o.halt_ex || ctrl_fsm_o.kill_ex) &&
+      assign xif_commit_if.commit_valid       = (!ctrl_fsm_o.halt_ex || ctrl_fsm_o.kill_ex || !scaiev.execute_doHalt || scaiev.execute_doKill) &&
                                                  (id_ex_pipe_i.xif_en && id_ex_pipe_i.instr_valid) &&
                                                  !commit_valid_q; // Make sure we signal only once per instruction
 
       assign xif_commit_if.commit.id          = id_ex_pipe_i.xif_meta.id;
-      assign xif_commit_if.commit.commit_kill = xif_csr_error_i || ctrl_fsm_o.kill_ex || kill_rejected;
+      assign xif_commit_if.commit.commit_kill = xif_csr_error_i || ctrl_fsm_o.kill_ex || scaiev.execute_doKill || kill_rejected;
 
       // Signal commit_kill=1 to all instructions rejected by the eXtension interface
       assign kill_rejected = (id_ex_pipe_i.xif_en && !id_ex_pipe_i.xif_meta.accepted) && id_ex_pipe_i.instr_valid;
@@ -1483,7 +1486,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
           commit_valid_q <= 1'b0;
           commit_kill_q  <= 1'b0;
         end else begin
-          if ((ex_valid_i && wb_ready_i) || ctrl_fsm_o.kill_ex) begin
+          if ((ex_valid_i && wb_ready_i) || ctrl_fsm_o.kill_ex || scaiev.execute_doKill) begin
             commit_valid_q <= 1'b0;
             commit_kill_q  <= 1'b0;
           end else begin

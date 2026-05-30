@@ -760,8 +760,13 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .clk(clk),
     .rst_n(rst_ni),
 
+    // Controller
+    .ctrl_fsm_i            ( ctrl_fsm           ),
+
+    // ID/EX pipeline
     .id_ex_pipe(id_ex_pipe),
 
+    // SCAIEV internal interface
     .scaiev(scaiev)
   );
 

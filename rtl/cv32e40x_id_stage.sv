@@ -212,7 +212,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // Current index for JVT instructions
   logic [7:0]           jvt_index;
 
-  assign instr_valid = if_id_pipe_i.instr_valid && !ctrl_fsm_i.kill_id && !ctrl_fsm_i.halt_id;
+  assign instr_valid = if_id_pipe_i.instr_valid && !ctrl_fsm_i.kill_id && !ctrl_fsm_i.halt_id && !scaiev.decode_doKill && !scaiev.decode_doHalt;
 
   assign sys_mret_insn_o = sys_mret_insn;
 
@@ -678,7 +678,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   //
   // Most stall conditions are factored into halt_id (and will force both ready and valid to 0).
 
-  assign id_ready_o = ctrl_fsm_i.kill_id || (ex_ready_i && !ctrl_fsm_i.halt_id && !xif_waiting);
+  assign id_ready_o = ctrl_fsm_i.kill_id || (ex_ready_i && !ctrl_fsm_i.halt_id && !xif_waiting && !scaiev.decode_doHalt) || scaiev.decode_doKill;
 
   assign id_valid_o = (instr_valid && !xif_waiting);
 
@@ -707,7 +707,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
           xif_accepted_q <= 1'b0;
           xif_rejected_q <= 1'b0;
         end else begin
-          if ( (id_valid_o && ex_ready_i) || ctrl_fsm_i.kill_id ) begin
+          if ( (id_valid_o && ex_ready_i) || ctrl_fsm_i.kill_id || scaiev.decode_doKill ) begin
             xif_accepted_q <= 1'b0;
             xif_rejected_q <= 1'b0;
           end else begin
@@ -804,5 +804,8 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   assign scaiev.decode_PC = if_id_pipe_i.pc;
   assign scaiev.decode_RS1 = operand_a_fw;
   assign scaiev.decode_RS2 = operand_b_fw;
+  assign scaiev.decode_Instr = instr;
+  assign scaiev.decode_isKilled = ctrl_fsm_i.kill_id;
+  assign scaiev.decode_isHalted = ctrl_fsm_i.halt_id;
 
 endmodule

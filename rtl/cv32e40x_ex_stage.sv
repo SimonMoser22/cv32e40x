@@ -117,9 +117,14 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic           div_shift_en;
   logic [5:0]     div_shift_amt;
   logic [31:0]    div_op_b_shifted;
+  logic           div_halt;
+  logic           div_kill;
 
   // Multiplier signals
   logic           mul_en;
+  logic           mul_halt;
+  logic           mul_kill;
+
 
   // Misc signals
   logic           forced_nop; // Exception or trigger forces this instruction to be a nop with no enables active
@@ -130,12 +135,18 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic           csr_is_illegal;
 
 
-  assign instr_valid = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !ctrl_fsm_i.halt_ex;
+  assign instr_valid = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !ctrl_fsm_i.halt_ex && !scaiev.decode_doKill && !scaiev.execute_doHalt;
 
-  // The multiplier and divider both factor in halt_ex and kill_ex.
+  // The multiplier and divider both factor in halt_ex and kill_ex. This includes scaiev halt and kill signals.
   // MUL/DIV instructions in flight will keep state while halted, and reset state on kill.
   assign mul_en = id_ex_pipe_i.mul_en && id_ex_pipe_i.instr_valid; // Valid MUL in EX, not affected by kill/halt
   assign div_en = id_ex_pipe_i.div_en && id_ex_pipe_i.instr_valid; // Valid DIV in EX, not affected by kill/halt
+  
+  assign mul_halt = ctrl_fsm_i.halt_ex || scaiev.execute_doHalt;
+  assign mul_kill = ctrl_fsm_i.kill_ex || scaiev.execute_doKill;
+  assign div_halt = ctrl_fsm_i.halt_ex || scaiev.execute_doHalt;
+  assign div_kill = ctrl_fsm_i.kill_ex || scaiev.execute_doKill;
+
 
   // The lsu_en_gated factors in halt_ex and kill_ex via instr_valid.
   // A halted or killed LSU instruction must not generate a data_req to ensure no OBI protocol is violated.
@@ -256,8 +267,8 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
          .result_o           ( div_result                           ),
 
          // Handshakes
-         .halt_i             ( ctrl_fsm_i.halt_ex                   ),
-         .kill_i             ( ctrl_fsm_i.kill_ex                   ),
+         .halt_i             ( div_halt                             ),
+         .kill_i             ( div_kill                             ),
          .valid_i            ( div_en                               ),
          .ready_o            ( div_ready                            ),
          .valid_o            ( div_valid                            ),
@@ -304,8 +315,8 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
          // Result
          .result_o        ( mul_result                    ),
 
-         .halt_i          ( ctrl_fsm_i.halt_ex            ),
-         .kill_i          ( ctrl_fsm_i.kill_ex            ),
+         .halt_i          ( mul_halt                      ),
+         .kill_i          ( mul_kill                      ),
 
          // Handshakes
          .valid_i         ( mul_en                        ),
@@ -472,7 +483,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // unless the stage is being halted. The late (data_rvalid_i based) downstream wb_ready_i signal
   // fans into the ready signals of all functional units.
 
-  assign ex_ready_o = ctrl_fsm_i.kill_ex || (alu_ready && csr_ready && sys_ready && mul_ready && div_ready && lsu_ready_i && xif_ready && !ctrl_fsm_i.halt_ex);
+  assign ex_ready_o = ctrl_fsm_i.kill_ex || scaiev.execute_doKill || (alu_ready && csr_ready && sys_ready && mul_ready && div_ready && lsu_ready_i && xif_ready && !ctrl_fsm_i.halt_ex && !scaiev.execute_doHalt);
 
   assign ex_valid_o = ((id_ex_pipe_i.alu_en && alu_valid)                   ||
                        (id_ex_pipe_i.csr_en && csr_valid)                   ||
@@ -504,7 +515,5 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   //---------------------------------------------------------------------------
   // SCAIE-V interface
   //---------------------------------------------------------------------------
-
-  
 
 endmodule

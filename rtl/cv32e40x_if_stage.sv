@@ -157,6 +157,8 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
   logic              seq_tbljmp;      // Sequenced instruction is a table jump
   logic              seq_pushpop;     // Sequenced instruction is a push or pop
   logic              first_op;
+  logic              seq_halt;        // IF is halted by FSM or SCAIEV
+  logic              seq_kill;        // IF is killed by FSM or SCAIEV
 
   logic              unused_signals;
 
@@ -304,10 +306,10 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
 
   // Local instr_valid when we have valid output from prefetcher
   // and IF stage is not halted or killed
-  assign instr_valid = prefetch_valid && !ctrl_fsm_i.kill_if && !ctrl_fsm_i.halt_if;
+  assign instr_valid = prefetch_valid && !ctrl_fsm_i.kill_if && !ctrl_fsm_i.halt_if && !scaiev.fetch_doKill && !scaiev.fetch_doHalt;
 
   // if_stage ready when killed, otherwise when not halted and the sequencer and predecoder are both ready
-  assign if_ready = ctrl_fsm_i.kill_if || (seq_ready && predec_ready && !ctrl_fsm_i.halt_if);
+  assign if_ready = ctrl_fsm_i.kill_if || (seq_ready && predec_ready && !ctrl_fsm_i.halt_if && !scaiev.fetch_doHalt) || scaiev.fetch_doKill;
 
 
   // if stage valid when local instr_valid=1
@@ -471,6 +473,9 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
   // will be taken from WB with no side effects performed.
   assign seq_instr_valid = prefetch_valid;
 
+  assign seq_halt = ctrl_fsm_i.halt_if || scaiev.fetch_doHalt;
+  assign seq_kill = ctrl_fsm_i.kill_if || scaiev.fetch_doKill;
+
   generate
     if (ZC_EXT) begin : gen_seq
       cv32e40x_sequencer
@@ -489,8 +494,8 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
 
         .valid_i              ( seq_instr_valid         ),
         .ready_i              ( id_ready_i              ),
-        .halt_i               ( ctrl_fsm_i.halt_if      ),
-        .kill_i               ( ctrl_fsm_i.kill_if      ),
+        .halt_i               ( seq_halt                ),
+        .kill_i               ( seq_kill                ),
 
 
         .instr_o              ( seq_instr               ),
@@ -544,6 +549,9 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
   //---------------------------------------------------------------------------
   
   assign scaiev.fetch_PC = pc_if_o;
+  assign scaiev.fetch_Instr = seq_valid ? seq_instr.bus_resp.rdata : instr_decompressed.bus_resp.rdata;
+  assign scaiev.fetch_isKilled = ctrl_fsm_i.kill_if;
+  assign scaiev.fetch_isHalted = ctrl_fsm_i.halt_if;
 
 
   // Some signals are unused on purpose. Use them here for easier LINT waiving.

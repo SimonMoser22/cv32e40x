@@ -65,7 +65,11 @@ module cv32e40x_alignment_buffer import cv32e40x_pkg::*;
   output logic                       instr_is_clic_ptr_o, // True CLIC pointer after taking a CLIC SHV interrupt
   output logic                       instr_is_mret_ptr_o, // CLIC pointer due to restarting pointer fetch during mret
   output logic                       instr_is_tbljmp_ptr_o,
-  output logic [ALBUF_CNT_WIDTH-1:0] outstnd_cnt_q_o
+  output logic [ALBUF_CNT_WIDTH-1:0] outstnd_cnt_q_o,
+
+
+  // SCAIE-V internal interface
+  scaiev_interface.core scaiev
 );
 
   // Counter for number of instructions in the FIFO
@@ -253,7 +257,7 @@ module cv32e40x_alignment_buffer import cv32e40x_pkg::*;
     instr_valid_o = 1'b0;
 
     // Invalidate output if we get killed
-    if (ctrl_fsm_i.kill_if) begin
+    if (ctrl_fsm_i.kill_if || scaiev.fetch_doKill) begin
       instr_valid_o = 1'b0;
     end else if (instr_addr_o[1]) begin
       // unaligned instruction
@@ -376,7 +380,7 @@ module cv32e40x_alignment_buffer import cv32e40x_pkg::*;
     instr_cnt_n = instr_cnt_q;
     n_flush_branch = outstanding_cnt_q;
 
-    if(ctrl_fsm_i.kill_if) begin
+    if(ctrl_fsm_i.kill_if || scaiev.fetch_doKill) begin
       // FIFO content is invalidated when IF is killed
       instr_cnt_n = 'd0;
 
@@ -549,7 +553,7 @@ module cv32e40x_alignment_buffer import cv32e40x_pkg::*;
     begin
       // on a kill signal from outside we invalidate the content of the FIFO
       // completely and start from an empty state
-      if (ctrl_fsm_i.kill_if) begin
+      if (ctrl_fsm_i.kill_if || scaiev.fetch_doKill) begin
         valid_q <= '0;
       end else begin
         // Update FIFO content on a valid response
