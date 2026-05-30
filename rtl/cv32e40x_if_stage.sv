@@ -231,7 +231,10 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
     // Prefetch Buffer Status
     .prefetch_busy_o          ( prefetch_busy               ),
     .one_txn_pend_n           ( prefetch_one_txn_pend_n     ),
-    .outstnd_cnt_q_o          ( prefetch_outstnd_cnt_q      )
+    .outstnd_cnt_q_o          ( prefetch_outstnd_cnt_q      ),
+    
+    // SCAIEV
+    .scaiev                   ( scaiev                      )
   );
 
   //////////////////////////////////////////////////////////////////////////////

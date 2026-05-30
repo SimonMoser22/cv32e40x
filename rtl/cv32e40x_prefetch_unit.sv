@@ -62,7 +62,10 @@ module cv32e40x_prefetch_unit import cv32e40x_pkg::*;
   output logic [ALBUF_CNT_WIDTH-1:0] outstnd_cnt_q_o,
 
   // Prefetch Buffer Status
-  output logic        prefetch_busy_o
+  output logic        prefetch_busy_o,
+
+  // SCAIE-V internal interface
+    scaiev_interface.core scaiev
 );
 
   logic fetch_valid;
@@ -143,7 +146,9 @@ module cv32e40x_prefetch_unit import cv32e40x_pkg::*;
     .instr_priv_lvl_o      ( prefetch_priv_lvl_o     ),
     .instr_is_clic_ptr_o   ( prefetch_is_clic_ptr_o  ),
     .instr_is_mret_ptr_o   ( prefetch_is_mret_ptr_o  ),
-    .instr_is_tbljmp_ptr_o ( prefetch_is_tbljmp_ptr_o)
+    .instr_is_tbljmp_ptr_o ( prefetch_is_tbljmp_ptr_o),
+
+    .scaiev                ( scaiev                  )
 
   );
 
