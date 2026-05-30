@@ -1060,7 +1060,10 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // eXtension interface
     .xif_commit_if                  ( xif_commit_if          ),
-    .xif_csr_error_i                ( xif_csr_error_ex       )
+    .xif_csr_error_i                ( xif_csr_error_ex       ),
+
+    // SCAIE-V internal interface
+    .scaiev                         ( scaiev                 )
   );
 
   ////////////////////////////////////////////////////////////////////////
@@ -1196,7 +1199,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .rst_n(rst_ni),
 
     .scaiev(scaiev)
-
+  
   );
 
   // Some signals are unused on purpose (typically they are used by RVFI code). Use them here for easier LINT waiving.

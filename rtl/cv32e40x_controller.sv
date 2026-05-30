@@ -143,7 +143,10 @@ module cv32e40x_controller import cv32e40x_pkg::*;
 
   // eXtension interface
   cv32e40x_if_xif.cpu_commit xif_commit_if,
-  input                      xif_csr_error_i
+  input                      xif_csr_error_i,
+
+  // SCAIE-V internal interface
+  scaiev_interface.core scaiev
 );
 
   // Main FSM and debug FSM
@@ -241,7 +244,9 @@ module cv32e40x_controller import cv32e40x_pkg::*;
 
     // eXtension interface
     .xif_commit_if               ( xif_commit_if            ),
-    .xif_csr_error_i             ( xif_csr_error_i          )
+    .xif_csr_error_i             ( xif_csr_error_i          ),
+
+    .scaiev                      ( scaiev                   )
   );
 
 
