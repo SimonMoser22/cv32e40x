@@ -206,6 +206,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   logic                 xif_dualwrite;
   logic                 xif_loadstore;
 
+  // SCAIE-V
+  logic                 scaiev_en;
+
   // Signal for detection of first operation (of two) of table jumps.
   logic                 tbljmp_first;
 
@@ -540,6 +543,8 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
       id_ex_pipe_o.xif_en                 <= 1'b0;
       id_ex_pipe_o.xif_meta               <= '0;
 
+      id_ex_pipe_o.scaiev_en              <= 1'b0;
+
       id_ex_pipe_o.priv_lvl               <= PRIV_LVL_M;
       id_ex_pipe_o.illegal_insn           <= 1'b0;
 
@@ -630,7 +635,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
         id_ex_pipe_o.illegal_insn           <= illegal_insn && !xif_insn_accept; // && !decode_isSCAIEV => implicit in decode
 
-        //id_ex_pipe._o.scaiev_en = ( scaiev.decode_isSCAIEV)
+        id_ex_pipe_o.scaiev_en              <= scaiev_en;
 
         id_ex_pipe_o.rf_we                  <= rf_we;
         if (rf_we) begin
@@ -801,6 +806,8 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // SCAIE-V interface
   //---------------------------------------------------------------------------
   
+  assign scaiev_en = scaiev.decode_isSCAIEV;
+
   assign scaiev.decode_PC = if_id_pipe_i.pc;
   assign scaiev.decode_RS1 = operand_a_fw;
   assign scaiev.decode_RS2 = operand_b_fw;

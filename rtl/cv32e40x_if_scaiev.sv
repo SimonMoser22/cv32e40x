@@ -31,6 +31,8 @@ interface scaiev_interface;
     logic [31: 0] execute_PC;
     logic [31: 0] execute_RS1;
     logic [31: 0] execute_RS2;
+    logic         execute_RD_valid;
+    logic [31: 0] execute_RD;
     logic [31: 0] execute_Instr;
     logic         execute_isKilled;         // RdFlush
     logic         execute_isHalted;         // RdStall
@@ -42,11 +44,7 @@ interface scaiev_interface;
     // Signals from/to writeback stage
     logic [31: 0] writeback_PC;
     logic [31: 0] writeback_Instr;
-    logic         writeback_isKilled;       // RdFlush
-    logic         writeback_isHalted;       // RdStall
-    logic         writeback_doKill;         // WrFlush
-    logic         writeback_doHalt;         // WrStall
-
+    
 
 
     modport core (
@@ -61,11 +59,10 @@ interface scaiev_interface;
         decode_doKill,
         decode_doHalt,
 
+        execute_RD_valid,
+        execute_RD,
         execute_doKill,
         execute_doHalt,
-
-        writeback_doKill,
-        writeback_doHalt,
 
         output
         fetch_PC,
@@ -88,9 +85,7 @@ interface scaiev_interface;
         execute_isHalted,
 
         writeback_PC,
-        writeback_Instr,
-        writeback_isKilled,
-        writeback_isHalted
+        writeback_Instr
     
     );
 
@@ -107,11 +102,10 @@ interface scaiev_interface;
         decode_doKill,
         decode_doHalt,
 
+        execute_RD_valid,
+        execute_RD,
         execute_doKill,
         execute_doHalt,
-
-        writeback_doKill,
-        writeback_doHalt,
 
         input
         fetch_PC,
@@ -134,9 +128,7 @@ interface scaiev_interface;
         execute_isHalted,
 
         writeback_PC,
-        writeback_Instr,
-        writeback_isKilled,
-        writeback_isHalted
+        writeback_Instr
     
     );
 

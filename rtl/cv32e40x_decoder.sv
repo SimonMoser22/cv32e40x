@@ -275,6 +275,7 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
       !decoder_a_ctrl.illegal_insn : decoder_ctrl_mux = decoder_a_ctrl; // A decoder got a match
       !decoder_i_ctrl.illegal_insn : decoder_ctrl_mux = decoder_i_ctrl; // I decoder got a match
       !decoder_b_ctrl.illegal_insn : decoder_ctrl_mux = decoder_b_ctrl; // B decoder got a match
+      !decoder_scaiev_ctrl.illegal_insn : decoder_ctrl_mux = decoder_scaiev_ctrl; // SCAIE-V decoder got a match
       default                      : decoder_ctrl_mux = DECODER_CTRL_ILLEGAL_INSN; // No match from decoders, illegal instruction
     endcase
   end

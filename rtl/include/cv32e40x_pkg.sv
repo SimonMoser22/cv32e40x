@@ -1231,6 +1231,9 @@ typedef struct packed {
   logic         xif_en;           // Instruction has been offloaded via eXtension interface
   xif_meta_t    xif_meta;         // xif meta struct
 
+  // SCAIE-V
+  logic         scaiev_en;
+
   logic         first_op;         // First part of multi operation instruction
   logic         last_op;          // Last part of multi operation instruction
   logic         abort_op;         // Instruction will be aborted due to known exceptions or trigger matches

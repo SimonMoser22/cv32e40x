@@ -99,12 +99,15 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic           div_valid;
   logic           xif_ready;
   logic           xif_valid;
+  logic           scaiev_ready;
+  logic           scaiev_valid;
 
   // Result signals
   logic [31:0]    alu_result;
   logic           alu_cmp_result;
   logic [31:0]    mul_result;
   logic [31:0]    div_result;
+  logic           scaiev_result;
 
   // Gated enable signals factoring in instr_valid)
   logic           lsu_en_gated;
@@ -183,6 +186,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
       id_ex_pipe_i.mul_en : rf_wdata_o = mul_result;
       id_ex_pipe_i.div_en : rf_wdata_o = div_result;
       id_ex_pipe_i.csr_en : rf_wdata_o = csr_rdata_i;
+      id_ex_pipe_i.scaiev_en : rf_wdata_o = scaiev_result;
       default             : rf_wdata_o = alu_result;
     endcase
   end
@@ -336,6 +340,35 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
     end
   endgenerate
 
+  ///////////////////////////////////////////////////////////////////////////
+  //    ____   ____    _    ___ _____   __     __  _   _ _   _ ___ _____   //
+  //   / ___| / ___|  / \  |_ _| ____|  \ \   / / | | | | \ | |_ _|_   _|  //
+  //   \___ \| |     / _ \  | ||  _| ____\ \ / /  | | | |  \| || |  | |    //
+  //    ___) | |___ / ___ \ | || |__|_____\ V /   | |_| | |\  || |  | |    //
+  //   |____/ \____/_/   \_\___|_____|     \_/     \___/|_| \_|___| |_|    //
+  //                                                                       //
+  ///////////////////////////////////////////////////////////////////////////
+
+
+  cv32e40x_scaiev_unit scaiev_unit
+  (
+    .clk                    ( clk           ),
+    .rst_n                  ( rst_n         ),
+
+    // Controller
+    .ctrl_fsm_i             ( ctrl_fsm_i    ),
+
+    // ID/EX pipeline
+    .id_ex_pipe_i           ( id_ex_pipe_i  ),
+
+    .ready_o                ( scaiev_ready  ),
+    .valid_o                ( scaiev_valid  ),
+    .result_o               ( scaiev_result ),
+
+    // SCAIEV internal interface
+    .scaiev(scaiev)
+  );
+
   ///////////////////////////////////////
   // EX/WB Pipeline Register           //
   ///////////////////////////////////////
@@ -483,7 +516,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // unless the stage is being halted. The late (data_rvalid_i based) downstream wb_ready_i signal
   // fans into the ready signals of all functional units.
 
-  assign ex_ready_o = ctrl_fsm_i.kill_ex || scaiev.execute_doKill || (alu_ready && csr_ready && sys_ready && mul_ready && div_ready && lsu_ready_i && xif_ready && !ctrl_fsm_i.halt_ex && !scaiev.execute_doHalt);
+  assign ex_ready_o = ctrl_fsm_i.kill_ex || scaiev.execute_doKill || (alu_ready && csr_ready && sys_ready && mul_ready && div_ready && lsu_ready_i && xif_ready && scaiev_ready && !ctrl_fsm_i.halt_ex && !scaiev.execute_doHalt);
 
   assign ex_valid_o = ((id_ex_pipe_i.alu_en && alu_valid)                   ||
                        (id_ex_pipe_i.csr_en && csr_valid)                   ||
@@ -492,6 +525,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
                        (id_ex_pipe_i.div_en && div_valid)                   ||
                        (id_ex_pipe_i.lsu_en && lsu_valid_i)                 ||
                        (id_ex_pipe_i.xif_en && xif_valid)                   ||
+                       (id_ex_pipe_i.scaiev_en && scaiev_valid)             ||
                        (id_ex_pipe_i.instr_meta.clic_ptr && clic_ptr_valid) ||
                        (id_ex_pipe_i.instr_meta.mret_ptr && mret_ptr_valid) ||
                        (forced_nop && forced_nop_valid)
