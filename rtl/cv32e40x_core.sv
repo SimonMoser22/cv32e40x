@@ -324,9 +324,9 @@ module cv32e40x_core import cv32e40x_pkg::*;
   logic        etrigger_wb;
 
   // Controller <-> decoder
-  logic        alu_jmp_id;
+  logic        id_jmp;
   logic        alu_jmpr_id;
-  logic        alu_en_id;
+  logic        jmp_en_id;
   logic        sys_en_id;
   logic        sys_mret_insn_id;
   logic        csr_en_raw_id;
@@ -567,11 +567,11 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .rf_wdata_ex_i                ( rf_wdata_ex               ),
     .rf_wdata_wb_i                ( rf_wdata_wb               ),
 
-    .alu_jmp_o                    ( alu_jmp_id                ),
+    .id_jmp_o                     ( id_jmp                    ),
     .alu_jmpr_o                   ( alu_jmpr_id               ),
     .sys_mret_insn_o              ( sys_mret_insn_id          ),
     .csr_en_raw_o                 ( csr_en_raw_id             ),
-    .alu_en_o                     ( alu_en_id                 ),
+    .jump_en_o                    ( jmp_en_id                 ),
     .sys_en_o                     ( sys_en_id                 ),
 
     .first_op_o                   ( first_op_id               ),
@@ -963,9 +963,9 @@ module cv32e40x_core import cv32e40x_pkg::*;
     // from IF/ID pipeline
     .if_id_pipe_i                   ( if_id_pipe             ),
 
-    .alu_jmp_id_i                   ( alu_jmp_id             ),
+    .id_jmp_i                       ( id_jmp                 ),
     .alu_jmpr_id_i                  ( alu_jmpr_id            ),
-    .alu_en_id_i                    ( alu_en_id              ),
+    .jmp_en_id_i                    ( jmp_en_id              ),
     .sys_en_id_i                    ( sys_en_id              ),
     .sys_mret_id_i                  ( sys_mret_insn_id       ),
     .csr_en_raw_id_i                ( csr_en_raw_id          ),

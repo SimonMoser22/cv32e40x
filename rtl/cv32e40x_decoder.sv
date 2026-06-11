@@ -82,6 +82,11 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   output logic          lsu_sext_o,             // Sign extension on read data from data memory
   output logic [5:0]    lsu_atop_o,             // Atomic memory access
 
+  // SCAIE-V
+  output logic          scaiev_en_o,            // Enable the SCAIE-V unit
+  output logic          scaiev_jmp_o,           // SCAIE-V jump (ISAX provides jump target)
+  output logic          scaiev_bch_o,           // SCAIE-V branch (ISAX performs comparison and provides jump target)
+
   // Register file related signals
   output logic          rf_we_o,                // Write enable for register file
   output logic [1:0]    rf_re_o,
@@ -113,6 +118,7 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   logic       mul_en;
   logic       div_en;
   logic       sys_en;
+  logic       scaiev_en;
 
   logic [31:0] instr_rdata;
 
@@ -251,6 +257,9 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
 
   assign decoder_scaiev_ctrl_int = DECODER_CTRL_ILLEGAL_INSN;
 
+  assign decoder_scaiev_ctrl_int.scaiev_en = scaiev.decode_isSCAIEV;
+  assign decoder_scaiev_ctrl_int.scaiev_jmp = scaiev.decode_isSCAIEV_jmp;
+  assign decoder_scaiev_ctrl_int.scaiev_bch = scaiev.decode_isSCAIEV_bch;
   assign decoder_scaiev_ctrl_int.alu_op_a_mux_sel = OP_A_REGA_OR_FWD;
   assign decoder_scaiev_ctrl_int.alu_op_b_mux_sel = OP_B_REGB_OR_FWD;
   assign decoder_scaiev_ctrl_int.illegal_insn = !scaiev.decode_isSCAIEV;
@@ -314,6 +323,9 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   assign sys_wfe_insn_o     = decoder_i_ctrl.sys_wfe_insn;                      // Only I decoder handles WFE
   assign sys_fence_insn_o   = decoder_i_ctrl.sys_fence_insn;                    // Only I decoder handles FENCE
   assign sys_fencei_insn_o  = decoder_i_ctrl.sys_fencei_insn;                   // Only I decoder handles FENCE.I
+  assign scaiev_en          = decoder_scaiev_ctrl.scaiev_en;                    // Only SCAIEV decoder handles ISAX
+  assign scaiev_jmp_o       = decoder_scaiev_ctrl.scaiev_jmp;                   // Only SCAIEV decoder handles ISAX jump
+  assign scaiev_bch_o       = decoder_scaiev_ctrl.scaiev_bch;                   // Only SCAIEV decoder handles ISAX branch
 
   // Suppress control signals
   assign alu_en_o = deassert_we_i ? 1'b0 : alu_en;
@@ -321,6 +333,7 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   assign mul_en_o = deassert_we_i ? 1'b0 : mul_en;
   assign div_en_o = deassert_we_i ? 1'b0 : div_en;
   assign lsu_en_o = deassert_we_i ? 1'b0 : lsu_en;
+  assign scaiev_en_o = deassert_we_i ? 1'b0 : scaiev_en;
 
   assign csr_en_o = deassert_we_i ? 1'b0 : csr_en;
 

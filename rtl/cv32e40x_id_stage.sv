@@ -69,14 +69,14 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // Register file write data from EX stage
   input  logic [31:0] rf_wdata_ex_i,
 
-  output logic        alu_jmp_o,        // Jump (JAL, JALR)
+  output logic        id_jmp_o,         // Jump (JAL, JALR, SCAIE-V ISAX)
   output logic        alu_jmpr_o,       // Jump register (JALR)
 
   output logic        sys_mret_insn_o,
 
   output logic        csr_en_raw_o,
 
-  output logic        alu_en_o,
+  output logic        jump_en_o,        // a unit in ID is enabled which might perform a jump
   output logic        sys_en_o,
 
   output logic        first_op_o,
@@ -191,6 +191,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // Branch target address
   logic [31:0]          bch_target;
 
+  // Jump target address
+  logic [31:0]          jmp_target;
+
   logic                 illegal_insn;
 
   // Local instruction valid qualifier
@@ -208,6 +211,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   // SCAIE-V
   logic                 scaiev_en;
+  logic                 scaiev_jmp;
+  logic                 scaiev_bch;
+  logic [31:0]          scaiev_jmp_target;
 
   // Signal for detection of first operation (of two) of table jumps.
   logic                 tbljmp_first;
@@ -274,8 +280,11 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
     .jvt_addr_i        ( jvt_addr_i      ),
     .jvt_index_i       ( jvt_index       ),
     .bch_target_o      ( bch_target      ),
-    .jmp_target_o      ( jmp_target_o    )
+    .jmp_target_o      ( jmp_target      )
   );
+
+  
+  assign jmp_target_o = (scaiev_en && scaiev_jmp) ? scaiev_jmp_target : jmp_target;
 
   ////////////////////////////////////////////////////////
   //   ___                                 _      _     //
@@ -436,6 +445,10 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
     .div_en_o                        ( div_en                    ),
     .div_operator_o                  ( div_operator              ),
 
+    .scaiev_en_o                     ( scaiev_en                 ),
+    .scaiev_jmp_o                    ( scaiev_jmp                ),
+    .scaiev_bch_o                    ( scaiev_bch                ),
+
     // CSR
     .csr_en_o                        ( csr_en                    ),
     .csr_en_raw_o                    ( csr_en_raw                ),
@@ -544,6 +557,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
       id_ex_pipe_o.xif_meta               <= '0;
 
       id_ex_pipe_o.scaiev_en              <= 1'b0;
+      id_ex_pipe_o.scaiev_bch              <= 1'b0;
 
       id_ex_pipe_o.priv_lvl               <= PRIV_LVL_M;
       id_ex_pipe_o.illegal_insn           <= 1'b0;
@@ -636,6 +650,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
         id_ex_pipe_o.illegal_insn           <= illegal_insn && !xif_insn_accept; // && !decode_isSCAIEV => implicit in decode
 
         id_ex_pipe_o.scaiev_en              <= scaiev_en;
+        if (scaiev_en) begin
+          id_ex_pipe_o.scaiev_bch           <= scaiev_bch;
+        end
 
         id_ex_pipe_o.rf_we                  <= rf_we;
         if (rf_we) begin
@@ -671,12 +688,13 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
     end
   end
 
-  assign alu_jmp_o    = alu_jmp;
+  // We assume here that ID is properly stalled (by SCAL or glue module) until scaiev.decode_jmp_target_valid becomes high
+  assign id_jmp_o     = (alu_en && alu_jmp) || (scaiev_en && scaiev_jmp && scaiev.decode_jmp_target_valid);
   assign alu_jmpr_o   = alu_jmpr;
 
   assign csr_en_raw_o = csr_en_raw;
 
-  assign alu_en_o     = alu_en;
+  assign jump_en_o    = alu_en || scaiev_en;
   assign sys_en_o     = sys_en;
 
   // Stage ready/valid
@@ -805,8 +823,6 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   //---------------------------------------------------------------------------
   // SCAIE-V interface
   //---------------------------------------------------------------------------
-  
-  assign scaiev_en = scaiev.decode_isSCAIEV;
 
   assign scaiev.decode_PC = if_id_pipe_i.pc;
   assign scaiev.decode_RS1 = operand_a_fw;
@@ -814,5 +830,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   assign scaiev.decode_Instr = instr;
   assign scaiev.decode_isKilled = ctrl_fsm_i.kill_id;
   assign scaiev.decode_isHalted = ctrl_fsm_i.halt_id;
+
+  assign scaiev_jmp_target = scaiev.decode_jmp_target;
 
 endmodule

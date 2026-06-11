@@ -550,4 +550,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // SCAIE-V interface
   //---------------------------------------------------------------------------
 
+  assign scaiev.execute_isKilled = ctrl_fsm_i.kill_ex;
+  assign scaiev.execute_isHalted = ctrl_fsm_i.halt_ex;
+
 endmodule

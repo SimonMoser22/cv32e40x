@@ -2,8 +2,8 @@
 interface scaiev_interface;
 
     // Signals from/to fetch stage
-    logic [31: 0] fetch_PC;
-    logic [31: 0] fetch_Instr;
+    logic [31: 0] fetch_PC;                 // RdPC
+    logic [31: 0] fetch_Instr;              // RdInstr
     logic         fetch_isKilled;           // RdFlush
     logic         fetch_isHalted;           // RdStall
     logic         fetch_doKill;             // WrFlush
@@ -12,7 +12,7 @@ interface scaiev_interface;
 
 
     // Signals from/to decode stage
-    logic [31: 0] decode_PC;
+    logic [31: 0] decode_PC;                // RdPC
     logic [31: 0] decode_RS1;
     logic [31: 0] decode_RS2;
     logic [31: 0] decode_Instr;
@@ -20,20 +20,28 @@ interface scaiev_interface;
     logic         decode_isHalted;          // RdStall
     logic         decode_doKill;            // WrFlush
     logic         decode_doHalt;            // WrStall
+    logic         decode_jmp_target;        // the jump target address for decode stage, WrPC
+    logic         decode_jmp_target_valid;  // the jump target address for decode stage is valid, WrPC
 
+    // Signals to decoder for micro code generation
     logic         decode_isSCAIEV;          // the instruction word was decoded by SCAL to be a valid ISAX
     logic         decode_isSCAIEV_usesRS1;  // the ISAX uses RS1 
     logic         decode_isSCAIEV_usesRS2;  // the ISAX uses RS2
     logic         decode_isSCAIEV_usesRD;   // the ISAX uses RD
+    logic         decode_isSCAIEV_jmp;      // the ISAX uses WrPC in decode stage
+    logic         decode_isSCAIEV_bch;      // the ISAX uses WrPC in execute stage
+
 
 
     // Signals from/to execute stage
-    logic [31: 0] execute_PC;
+    logic [31: 0] execute_PC;               // RdPC
     logic [31: 0] execute_RS1;
     logic [31: 0] execute_RS2;
-    logic         execute_RD_valid;
-    logic [31: 0] execute_RD;
     logic [31: 0] execute_Instr;
+    logic         execute_RD_valid;         // destination register update values is valid, WrRD
+    logic [31: 0] execute_RD;               // destination register update value, WrRD
+    logic         execute_bch_target;       // the branch target address for execute stage, WrPC
+    logic         execute_bch_target_valid; // the branch target address for execute stage is valid, WrPC
     logic         execute_isKilled;         // RdFlush
     logic         execute_isHalted;         // RdStall
     logic         execute_doKill;           // WrFlush
@@ -42,9 +50,9 @@ interface scaiev_interface;
 
 
     // Signals from/to writeback stage
-    logic [31: 0] writeback_PC;
+    logic [31: 0] writeback_PC;             // RdPC
     logic [31: 0] writeback_Instr;
-    
+
 
 
     modport core (
@@ -56,11 +64,18 @@ interface scaiev_interface;
         decode_isSCAIEV_usesRS1,
         decode_isSCAIEV_usesRS2,
         decode_isSCAIEV_usesRD,
+        decode_isSCAIEV_jmp,
+        decode_isSCAIEV_bch,
+        
+        decode_jmp_target,
+        decode_jmp_target_valid,
         decode_doKill,
         decode_doHalt,
 
         execute_RD_valid,
         execute_RD,
+        execute_bch_target,
+        execute_bch_target_valid,
         execute_doKill,
         execute_doHalt,
 
@@ -99,11 +114,18 @@ interface scaiev_interface;
         decode_isSCAIEV_usesRS1,
         decode_isSCAIEV_usesRS2,
         decode_isSCAIEV_usesRD,
+        decode_isSCAIEV_jmp,
+        decode_isSCAIEV_bch,
+        
+        decode_jmp_target,
+        decode_jmp_target_valid,
         decode_doKill,
         decode_doHalt,
 
         execute_RD_valid,
         execute_RD,
+        execute_bch_target,
+        execute_bch_target_valid,
         execute_doKill,
         execute_doHalt,
 

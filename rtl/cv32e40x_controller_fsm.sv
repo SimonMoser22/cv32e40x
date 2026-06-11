@@ -54,9 +54,9 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
   // From ID stage
   input  if_id_pipe_t if_id_pipe_i,
-  input  logic        alu_jmp_id_i,               // Jump in ID
+  input  logic        jmp_id_i,                   // Jump in ID
   input  logic        sys_mret_id_i,              // mret in ID
-  input  logic        alu_en_id_i,                // alu_en qualifier for jumps
+  input  logic        jmp_en_id_i,                // jump enable qualifier for jumps in ID
   input  logic        sys_en_id_i,                // sys_en qualifier for mret
   input  logic        first_op_id_i,              // ID stage is handling the first operation of a sequence
   input  logic        last_op_id_i,               // ID stage is handling the last operation of a sequence
@@ -294,7 +294,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   // causing a path from data_rvalid to instr_addr_o/instr_req_o/instr_memtype_o via pc_set.
 
   assign sys_mret_id = sys_en_id_i && sys_mret_id_i && if_id_pipe_i.instr_valid;
-  assign jmp_id      = alu_en_id_i && alu_jmp_id_i  && if_id_pipe_i.instr_valid;
+  assign jmp_id      = jmp_en_id_i && jmp_id_i      && if_id_pipe_i.instr_valid;
 
   // Detect that a jump is in the ID stage.
   // This will also be true for table jumps, as they are encoded as JAL instructions.

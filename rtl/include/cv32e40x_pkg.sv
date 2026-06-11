@@ -868,6 +868,9 @@ typedef struct packed {
   logic                              sys_mret_insn;
   logic                              sys_wfi_insn;
   logic                              sys_wfe_insn;
+  logic                              scaiev_en;
+  logic                              scaiev_bch;
+  logic                              scaiev_jmp;
 } decoder_ctrl_t;
 
   parameter decoder_ctrl_t DECODER_CTRL_ILLEGAL_INSN =  '{
@@ -905,7 +908,10 @@ typedef struct packed {
                                                           sys_fencei_insn              : 1'b0,
                                                           sys_mret_insn                : 1'b0,
                                                           sys_wfi_insn                 : 1'b0,
-                                                          sys_wfe_insn                 : 1'b0
+                                                          sys_wfe_insn                 : 1'b0,
+                                                          scaiev_en                    : 1'b0,
+                                                          scaiev_bch                   : 1'b0,
+                                                          scaiev_jmp                   : 1'b0
                                                           };
 
 ///////////////////////////////////////////////
@@ -1233,6 +1239,7 @@ typedef struct packed {
 
   // SCAIE-V
   logic         scaiev_en;
+  logic         scaiev_bch;       // SCAIE-V has a branching ISAX
 
   logic         first_op;         // First part of multi operation instruction
   logic         last_op;          // Last part of multi operation instruction
