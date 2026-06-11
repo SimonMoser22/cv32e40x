@@ -309,7 +309,7 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
 
   // Local instr_valid when we have valid output from prefetcher
   // and IF stage is not halted or killed
-  assign instr_valid = prefetch_valid && !ctrl_fsm_i.kill_if && !ctrl_fsm_i.halt_if && !scaiev.fetch_doKill && !scaiev.fetch_doHalt;
+  assign instr_valid = prefetch_valid && !ctrl_fsm_i.kill_if && !ctrl_fsm_i.halt_if;
 
   // if_stage ready when killed, otherwise when not halted and the sequencer and predecoder are both ready
   assign if_ready = ctrl_fsm_i.kill_if || (seq_ready && predec_ready && !ctrl_fsm_i.halt_if && !scaiev.fetch_doHalt) || scaiev.fetch_doKill;
@@ -325,7 +325,10 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
   // The Sequencer will output valid=1 for any instruction it can decode while not halted or killed
   //   when its valid_i (prefetch_valid) is high.
 
-  assign if_valid_o = instr_valid;
+
+  // IF is valid if it is considered valid by the core and not halted or killed by SCAIE-V
+  assign if_valid_o = instr_valid && !scaiev.fetch_doKill && !scaiev.fetch_doHalt;
+
 
   assign if_busy_o = prefetch_busy;
 
@@ -554,7 +557,7 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
   assign scaiev.fetch_PC = pc_if_o;
   assign scaiev.fetch_Instr = seq_valid ? seq_instr.bus_resp.rdata : instr_decompressed.bus_resp.rdata;
   assign scaiev.fetch_isKilled = ctrl_fsm_i.kill_if;
-  assign scaiev.fetch_isHalted = ctrl_fsm_i.halt_if;
+  assign scaiev.fetch_isHalted = instr_valid && !id_ready_i;
 
 
   // Some signals are unused on purpose. Use them here for easier LINT waiving.

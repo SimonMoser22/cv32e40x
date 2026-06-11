@@ -221,7 +221,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // Current index for JVT instructions
   logic [7:0]           jvt_index;
 
-  assign instr_valid = if_id_pipe_i.instr_valid && !ctrl_fsm_i.kill_id && !ctrl_fsm_i.halt_id && !scaiev.decode_doKill && !scaiev.decode_doHalt;
+  assign instr_valid = if_id_pipe_i.instr_valid && !ctrl_fsm_i.kill_id && !ctrl_fsm_i.halt_id;
 
   assign sys_mret_insn_o = sys_mret_insn;
 
@@ -703,7 +703,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   assign id_ready_o = ctrl_fsm_i.kill_id || (ex_ready_i && !ctrl_fsm_i.halt_id && !xif_waiting && !scaiev.decode_doHalt) || scaiev.decode_doKill;
 
-  assign id_valid_o = (instr_valid && !xif_waiting);
+  logic id_valid_core;
+  assign id_valid_core = (instr_valid && !xif_waiting);
+  assign id_valid_o = id_valid_core && !scaiev.decode_doKill && !scaiev.decode_doHalt;
 
   assign first_op_o  = if_id_pipe_i.first_op;
   // An mret with mcause.minhv set  will cause a pointer fetch, and that pointer fetch is the last operation of the mret.
@@ -745,7 +747,8 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
       // checked in the EX stage.
       // Instructions with deassert_we set to 1 from the controller bypass logic will not be attempted offloaded.
       assign xif_issue_if.issue_valid     = instr_valid && (illegal_insn || csr_en) &&
-                                            !(xif_accepted_q || xif_rejected_q || ctrl_byp_i.deassert_we);
+                                            !(xif_accepted_q || xif_rejected_q || ctrl_byp_i.deassert_we) &&
+                                            !(scaiev.decode_doKill || scaiev.decode_doHalt);
 
       // Keep xif_offloading_o high after an offloaded instruction was accepted or rejected to get
       // a new instruction ID from the IF stage
@@ -829,7 +832,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   assign scaiev.decode_RS2 = operand_b_fw;
   assign scaiev.decode_Instr = instr;
   assign scaiev.decode_isKilled = ctrl_fsm_i.kill_id;
-  assign scaiev.decode_isHalted = ctrl_fsm_i.halt_id;
+  assign scaiev.decode_isHalted = id_valid_core && !ex_ready_i;
 
   assign scaiev_jmp_target = scaiev.decode_jmp_target;
 

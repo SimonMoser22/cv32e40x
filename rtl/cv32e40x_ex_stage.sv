@@ -138,7 +138,9 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic           csr_is_illegal;
 
 
-  assign instr_valid = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !ctrl_fsm_i.halt_ex && !scaiev.decode_doKill && !scaiev.execute_doHalt;
+  logic instr_valid_internal;
+  assign instr_valid_internal = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !ctrl_fsm_i.halt_ex;
+  assign instr_valid = instr_valid_internal && !scaiev.decode_doKill && !scaiev.execute_doHalt;
 
   // The multiplier and divider both factor in halt_ex and kill_ex. This includes scaiev halt and kill signals.
   // MUL/DIV instructions in flight will keep state while halted, and reset state on kill.
@@ -518,18 +520,21 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
 
   assign ex_ready_o = ctrl_fsm_i.kill_ex || scaiev.execute_doKill || (alu_ready && csr_ready && sys_ready && mul_ready && div_ready && lsu_ready_i && xif_ready && scaiev_ready && !ctrl_fsm_i.halt_ex && !scaiev.execute_doHalt);
 
-  assign ex_valid_o = ((id_ex_pipe_i.alu_en && alu_valid)                   ||
-                       (id_ex_pipe_i.csr_en && csr_valid)                   ||
-                       (id_ex_pipe_i.sys_en && sys_valid)                   ||
-                       (id_ex_pipe_i.mul_en && mul_valid)                   ||
-                       (id_ex_pipe_i.div_en && div_valid)                   ||
-                       (id_ex_pipe_i.lsu_en && lsu_valid_i)                 ||
-                       (id_ex_pipe_i.xif_en && xif_valid)                   ||
-                       (id_ex_pipe_i.scaiev_en && scaiev_valid)             ||
-                       (id_ex_pipe_i.instr_meta.clic_ptr && clic_ptr_valid) ||
-                       (id_ex_pipe_i.instr_meta.mret_ptr && mret_ptr_valid) ||
-                       (forced_nop && forced_nop_valid)
-                      ) && instr_valid;
+  logic units_valid;
+  assign ex_valid_o = units_valid && instr_valid;
+  
+  assign units_valid = ((id_ex_pipe_i.alu_en && alu_valid)                   ||
+                        (id_ex_pipe_i.csr_en && csr_valid)                   ||
+                        (id_ex_pipe_i.sys_en && sys_valid)                   ||
+                        (id_ex_pipe_i.mul_en && mul_valid)                   ||
+                        (id_ex_pipe_i.div_en && div_valid)                   ||
+                        (id_ex_pipe_i.lsu_en && lsu_valid_i)                 ||
+                        (id_ex_pipe_i.xif_en && xif_valid)                   ||
+                        (id_ex_pipe_i.scaiev_en && scaiev_valid)             ||
+                        (id_ex_pipe_i.instr_meta.clic_ptr && clic_ptr_valid) ||
+                        (id_ex_pipe_i.instr_meta.mret_ptr && mret_ptr_valid) ||
+                        (forced_nop && forced_nop_valid)
+                       );
 
   //---------------------------------------------------------------------------
   // eXtension interface
@@ -550,7 +555,9 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // SCAIE-V interface
   //---------------------------------------------------------------------------
 
+  logic ex_valid_core;
+  assign ex_valid_core = units_valid && instr_valid_internal;
   assign scaiev.execute_isKilled = ctrl_fsm_i.kill_ex;
-  assign scaiev.execute_isHalted = ctrl_fsm_i.halt_ex;
+  assign scaiev.execute_isHalted = ex_valid_core && !wb_ready_i;
 
 endmodule
