@@ -558,7 +558,7 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
   assign scaiev.fetch_Instr = seq_valid ? seq_instr.bus_resp.rdata : instr_decompressed.bus_resp.rdata;
   assign scaiev.fetch_isKilled = ctrl_fsm_i.kill_if;
   assign scaiev.fetch_isHalted = instr_valid && !id_ready_i;
-
+  assign scaiev.fetch_valid = if_valid_o;
 
   // Some signals are unused on purpose. Use them here for easier LINT waiving.
   assign unused_signals = |prefetch_outstnd_cnt_q;

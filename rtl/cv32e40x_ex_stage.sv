@@ -137,6 +137,10 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // Detect if we get an illegal CSR instruction
   logic           csr_is_illegal;
 
+  // SCAIE-V
+  logic           scaiev_branch_decision;
+  logic [31:0]    scaiev_branch_target;
+
 
   logic instr_valid_internal;
   assign instr_valid_internal = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !ctrl_fsm_i.halt_ex;
@@ -194,8 +198,8 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   end
 
   // Branch handling
-  assign branch_decision_o = alu_cmp_result;
-  assign branch_target_o   = id_ex_pipe_i.operand_c;
+  assign branch_decision_o = (id_ex_pipe_i.scaiev_en && id_ex_pipe_i.scaiev_bch) ? scaiev_branch_decision : alu_cmp_result;
+  assign branch_target_o   = (id_ex_pipe_i.scaiev_en && id_ex_pipe_i.scaiev_bch) ? scaiev_branch_target : id_ex_pipe_i.operand_c;
 
   // Detect last operation
   // Both parts of a split misaligned load/store will reach WB, but only the second half will be marked with "last_op"
@@ -559,5 +563,6 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   assign ex_valid_core = units_valid && instr_valid_internal;
   assign scaiev.execute_isKilled = ctrl_fsm_i.kill_ex;
   assign scaiev.execute_isHalted = ex_valid_core && !wb_ready_i;
+  assign scaiev.execute_valid = ex_valid_o;
 
 endmodule

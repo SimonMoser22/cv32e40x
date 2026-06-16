@@ -694,7 +694,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   assign csr_en_raw_o = csr_en_raw;
 
-  assign jump_en_o    = alu_en || scaiev_en;
+  assign jump_en_o    = alu_en || (scaiev_en && scaiev.decode_jmp_target_valid);
   assign sys_en_o     = sys_en;
 
   // Stage ready/valid
@@ -833,6 +833,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   assign scaiev.decode_Instr = instr;
   assign scaiev.decode_isKilled = ctrl_fsm_i.kill_id;
   assign scaiev.decode_isHalted = id_valid_core && !ex_ready_i;
+  assign scaiev.decode_valid = id_valid_o;
 
   assign scaiev_jmp_target = scaiev.decode_jmp_target;
 

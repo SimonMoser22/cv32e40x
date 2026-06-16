@@ -8,6 +8,7 @@ interface scaiev_interface;
     logic         fetch_isHalted;           // RdStall
     logic         fetch_doKill;             // WrFlush
     logic         fetch_doHalt;             // WrStall
+    logic         fetch_valid;
 
 
 
@@ -22,6 +23,7 @@ interface scaiev_interface;
     logic         decode_doHalt;            // WrStall
     logic         decode_jmp_target;        // the jump target address for decode stage, WrPC
     logic         decode_jmp_target_valid;  // the jump target address for decode stage is valid, WrPC
+    logic         decode_valid;
 
     // Signals to decoder for micro code generation
     logic         decode_isSCAIEV;          // the instruction word was decoded by SCAL to be a valid ISAX
@@ -46,6 +48,7 @@ interface scaiev_interface;
     logic         execute_isHalted;         // RdStall
     logic         execute_doKill;           // WrFlush
     logic         execute_doHalt;           // WrStall
+    logic         execute_valid;
 
 
 
@@ -84,6 +87,7 @@ interface scaiev_interface;
         fetch_Instr,
         fetch_isKilled,
         fetch_isHalted,
+        fetch_valid,
 
         decode_PC,
         decode_RS1,
@@ -91,6 +95,7 @@ interface scaiev_interface;
         decode_Instr,
         decode_isKilled,
         decode_isHalted,
+        decode_valid,
 
         execute_PC,
         execute_RS1,
@@ -98,6 +103,7 @@ interface scaiev_interface;
         execute_Instr,
         execute_isKilled,
         execute_isHalted,
+        execute_valid,
 
         writeback_PC,
         writeback_Instr
@@ -134,6 +140,7 @@ interface scaiev_interface;
         fetch_Instr,
         fetch_isKilled,
         fetch_isHalted,
+        fetch_valid,
 
         decode_PC,
         decode_RS1,
@@ -141,6 +148,7 @@ interface scaiev_interface;
         decode_Instr,
         decode_isKilled,
         decode_isHalted,
+        decode_valid,
 
         execute_PC,
         execute_RS1,
@@ -148,6 +156,7 @@ interface scaiev_interface;
         execute_Instr,
         execute_isKilled,
         execute_isHalted,
+        execute_valid,
 
         writeback_PC,
         writeback_Instr
