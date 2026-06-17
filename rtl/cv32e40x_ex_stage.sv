@@ -107,7 +107,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic           alu_cmp_result;
   logic [31:0]    mul_result;
   logic [31:0]    div_result;
-  logic           scaiev_result;
+  logic [31:0]    scaiev_result;
 
   // Gated enable signals factoring in instr_valid)
   logic           lsu_en_gated;
