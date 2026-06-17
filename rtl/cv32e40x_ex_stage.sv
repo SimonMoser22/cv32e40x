@@ -358,21 +358,24 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
 
   cv32e40x_scaiev_unit scaiev_unit
   (
-    .clk                    ( clk           ),
-    .rst_n                  ( rst_n         ),
+    .clk                    ( clk                    ),
+    .rst_n                  ( rst_n                  ),
 
     // Controller
-    .ctrl_fsm_i             ( ctrl_fsm_i    ),
+    .ctrl_fsm_i             ( ctrl_fsm_i             ),
 
     // ID/EX pipeline
-    .id_ex_pipe_i           ( id_ex_pipe_i  ),
+    .id_ex_pipe_i           ( id_ex_pipe_i           ),
 
-    .ready_o                ( scaiev_ready  ),
-    .valid_o                ( scaiev_valid  ),
-    .result_o               ( scaiev_result ),
+    .ready_o                ( scaiev_ready           ),
+    .valid_o                ( scaiev_valid           ),
+    .result_o               ( scaiev_result          ),
+
+    .branch_decision_o      ( scaiev_branch_decision ),
+    .branch_target_o        ( scaiev_branch_target   ),
 
     // SCAIEV internal interface
-    .scaiev(scaiev)
+    .scaiev                 ( scaiev                 )
   );
 
   ///////////////////////////////////////
@@ -563,6 +566,9 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   assign ex_valid_core = units_valid && instr_valid_internal;
   assign scaiev.execute_isKilled = ctrl_fsm_i.kill_ex;
   assign scaiev.execute_isHalted = ex_valid_core && !wb_ready_i;
-  assign scaiev.execute_valid = ex_valid_o;
+
+  // RdInStageValid determines when meaningful values can be read from the stage. This should not indicate a stages valid signal to the next stage
+  // As in ID stage this is derived from the ex_valid_o, but without any halt conditions and without units_ready, as this would cause a deadlock
+  assign scaiev.execute_valid = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !scaiev.decode_doKill;
 
 endmodule
