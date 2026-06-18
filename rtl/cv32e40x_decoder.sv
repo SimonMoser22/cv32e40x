@@ -254,18 +254,18 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
   //---------------------------------------------------------------------------
   // SCAIE-V interface
   //---------------------------------------------------------------------------
+  always_comb begin
+    decoder_scaiev_ctrl_int = DECODER_CTRL_ILLEGAL_INSN;
 
-  assign decoder_scaiev_ctrl_int = DECODER_CTRL_ILLEGAL_INSN;
-
-  assign decoder_scaiev_ctrl_int.scaiev_en = scaiev.decode_isSCAIEV;
-  assign decoder_scaiev_ctrl_int.scaiev_jmp = scaiev.decode_isSCAIEV_jmp;
-  assign decoder_scaiev_ctrl_int.scaiev_bch = scaiev.decode_isSCAIEV_bch;
-  assign decoder_scaiev_ctrl_int.alu_op_a_mux_sel = OP_A_REGA_OR_FWD;
-  assign decoder_scaiev_ctrl_int.alu_op_b_mux_sel = OP_B_REGB_OR_FWD;
-  assign decoder_scaiev_ctrl_int.illegal_insn = !scaiev.decode_isSCAIEV;
-  assign decoder_scaiev_ctrl_int.rf_re = scaiev.decode_isSCAIEV_usesRS1 || scaiev.decode_isSCAIEV_usesRS2;
-  assign decoder_scaiev_ctrl_int.rf_we = scaiev.decode_isSCAIEV_usesRD;
-  
+    decoder_scaiev_ctrl_int.scaiev_en = scaiev.decode_isSCAIEV;
+    decoder_scaiev_ctrl_int.scaiev_jmp = scaiev.decode_isSCAIEV_jmp;
+    decoder_scaiev_ctrl_int.scaiev_bch = scaiev.decode_isSCAIEV_bch;
+    decoder_scaiev_ctrl_int.alu_op_a_mux_sel = OP_A_REGA_OR_FWD;
+    decoder_scaiev_ctrl_int.alu_op_b_mux_sel = OP_B_REGB_OR_FWD;
+    decoder_scaiev_ctrl_int.illegal_insn = !scaiev.decode_isSCAIEV;
+    decoder_scaiev_ctrl_int.rf_re = scaiev.decode_isSCAIEV_usesRS1 || scaiev.decode_isSCAIEV_usesRS2;
+    decoder_scaiev_ctrl_int.rf_we = scaiev.decode_isSCAIEV_usesRD;
+  end
   
 
   assign dec_scaiev_rf_illegal_addr = (scaiev.decode_isSCAIEV_usesRS1 && rf_illegal_raddr_o[0]) ||
