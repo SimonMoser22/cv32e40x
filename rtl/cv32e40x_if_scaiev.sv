@@ -50,6 +50,9 @@ interface scaiev_interface;
     logic         execute_doHalt;           // WrStall
     logic         execute_valid;
 
+    // SCAIE-V decoder signals advanced to EX
+    logic         execute_isSCAIEV_usesRD;  // instruction in EX is a SCAIE-V ISAX which uses WrRD
+
 
 
     // Signals from/to writeback stage
@@ -81,6 +84,8 @@ interface scaiev_interface;
         execute_bch_target_valid,
         execute_doKill,
         execute_doHalt,
+
+        execute_isSCAIEV_usesRD,
 
         output
         fetch_PC,
@@ -134,6 +139,8 @@ interface scaiev_interface;
         execute_bch_target_valid,
         execute_doKill,
         execute_doHalt,
+
+        execute_isSCAIEV_usesRD,
 
         input
         fetch_PC,
