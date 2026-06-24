@@ -263,7 +263,8 @@ module cv32e40x_decoder import cv32e40x_pkg::*;
     decoder_scaiev_ctrl_int.alu_op_a_mux_sel = OP_A_REGA_OR_FWD;
     decoder_scaiev_ctrl_int.alu_op_b_mux_sel = OP_B_REGB_OR_FWD;
     decoder_scaiev_ctrl_int.illegal_insn = !scaiev.decode_isSCAIEV;
-    decoder_scaiev_ctrl_int.rf_re = scaiev.decode_isSCAIEV_usesRS1 || scaiev.decode_isSCAIEV_usesRS2;
+    decoder_scaiev_ctrl_int.rf_re[0] = scaiev.decode_isSCAIEV_usesRS1;
+    decoder_scaiev_ctrl_int.rf_re[1] = scaiev.decode_isSCAIEV_usesRS2;
     decoder_scaiev_ctrl_int.rf_we = scaiev.decode_isSCAIEV_usesRD;
   end
   
