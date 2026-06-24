@@ -66,6 +66,6 @@ assign scaiev.execute_RS1 = id_ex_pipe_i.alu_operand_a;
 assign scaiev.execute_RS2 = id_ex_pipe_i.alu_operand_b;
 assign scaiev.execute_Instr = id_ex_pipe_i.instr.bus_resp.rdata;
 
-assign scaiev.execute_isSCAIEV_usesRD = id_ex_pipe_i.scaiev_en && id_ex_pipe_i.rf_we;
+assign scaiev.execute_isSCAIEV_usesRD = id_ex_pipe_i.instr_valid && id_ex_pipe_i.scaiev_en && id_ex_pipe_i.rf_we;
 
 endmodule

@@ -21,7 +21,7 @@ interface scaiev_interface;
     logic         decode_isHalted;          // RdStall
     logic         decode_doKill;            // WrFlush
     logic         decode_doHalt;            // WrStall
-    logic         decode_jmp_target;        // the jump target address for decode stage, WrPC
+    logic [31: 0] decode_jmp_target;        // the jump target address for decode stage, WrPC
     logic         decode_jmp_target_valid;  // the jump target address for decode stage is valid, WrPC
     logic         decode_valid;
 
@@ -42,7 +42,7 @@ interface scaiev_interface;
     logic [31: 0] execute_Instr;
     logic         execute_RD_valid;         // destination register update values is valid, WrRD
     logic [31: 0] execute_RD;               // destination register update value, WrRD
-    logic         execute_bch_target;       // the branch target address for execute stage, WrPC
+    logic [31: 0] execute_bch_target;       // the branch target address for execute stage, WrPC
     logic         execute_bch_target_valid; // the branch target address for execute stage is valid, WrPC
     logic         execute_isKilled;         // RdFlush
     logic         execute_isHalted;         // RdStall
