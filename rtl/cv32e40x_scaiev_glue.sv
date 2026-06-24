@@ -12,6 +12,13 @@ module cv32e40x_scaiev_glue
 );
 
 
+logic decode_isHalted;
+logic execute_isHalted;
+
+
+assign decode_isHalted = scaiev.decode_isHalted;
+assign execute_isHalted = scaiev.execute_isHalted;
+
 
 
 always_comb begin : WrRD_assign
