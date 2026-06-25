@@ -85,7 +85,6 @@ interface scaiev_interface;
         execute_doKill,
         execute_doHalt,
 
-        execute_isSCAIEV_usesRD,
 
         output
         fetch_PC,
@@ -109,6 +108,8 @@ interface scaiev_interface;
         execute_isKilled,
         execute_isHalted,
         execute_valid,
+
+        execute_isSCAIEV_usesRD,
 
         writeback_PC,
         writeback_Instr
@@ -140,8 +141,6 @@ interface scaiev_interface;
         execute_doKill,
         execute_doHalt,
 
-        execute_isSCAIEV_usesRD,
-
         input
         fetch_PC,
         fetch_Instr,
@@ -164,6 +163,8 @@ interface scaiev_interface;
         execute_isKilled,
         execute_isHalted,
         execute_valid,
+
+        execute_isSCAIEV_usesRD,
 
         writeback_PC,
         writeback_Instr
