@@ -19,28 +19,18 @@ logic execute_isHalted;
 assign decode_isHalted = scaiev.decode_isHalted;
 assign execute_isHalted = scaiev.execute_isHalted;
 
+// WrRD assign
+assign scaiev.execute_RD = '0;
+assign scaiev.execute_RD_valid = 1'b0;
 
+// WrPC_1 assign
+assign scaiev.decode_jmp_target = '0;
+assign scaiev.decode_jmp_target_valid = 1'b0;
 
-always_comb begin : WrRD_assign
-    scaiev.execute_RD = '0;
-    scaiev.execute_RD_valid = 1'b0;
+// WrPC_2 assign
+assign scaiev.execute_bch_target = '0;
+assign scaiev.execute_bch_target_valid = 1'b0;
 
-    // SCAIEV_INSERT_WRRD
-end
-
-always_comb begin : WrPC_assign
-
-    scaiev.decode_jmp_target = '0;
-    scaiev.decode_jmp_target_valid = 1'b0;
-
-    scaiev.execute_bch_target = '0;
-    scaiev.execute_bch_target_valid = 1'b0;
-
-    // SCAIEV_INSERT_WRPC_ID
-
-    // SCAIEV_INSERT_WRPC_EX
-
-end
 
 // scaiev_interface outgoing IF signals
 assign scaiev.fetch_doHalt = 1'b0;

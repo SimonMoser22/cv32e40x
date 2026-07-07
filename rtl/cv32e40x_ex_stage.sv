@@ -144,16 +144,17 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
 
   logic instr_valid_internal;
   assign instr_valid_internal = id_ex_pipe_i.instr_valid && !ctrl_fsm_i.kill_ex && !ctrl_fsm_i.halt_ex;
-  assign instr_valid = instr_valid_internal && !scaiev.decode_doKill && !scaiev.execute_doHalt;
+  assign instr_valid = instr_valid_internal && !scaiev.execute_doKill && !scaiev.execute_doHalt;
 
-  // The multiplier and divider both factor in halt_ex and kill_ex. This includes scaiev halt and kill signals.
+  // The multiplier and divider both factor in halt_ex and kill_ex. This includes scaiev kill signal.
+  // MUL/DIV modules shall not be stalled by SCAIEV, as no ISAX and MUL/DIV are in EX at the same time. 
   // MUL/DIV instructions in flight will keep state while halted, and reset state on kill.
   assign mul_en = id_ex_pipe_i.mul_en && id_ex_pipe_i.instr_valid; // Valid MUL in EX, not affected by kill/halt
   assign div_en = id_ex_pipe_i.div_en && id_ex_pipe_i.instr_valid; // Valid DIV in EX, not affected by kill/halt
   
-  assign mul_halt = ctrl_fsm_i.halt_ex || scaiev.execute_doHalt;
+  assign mul_halt = ctrl_fsm_i.halt_ex; //|| scaiev.execute_doHalt;
   assign mul_kill = ctrl_fsm_i.kill_ex || scaiev.execute_doKill;
-  assign div_halt = ctrl_fsm_i.halt_ex || scaiev.execute_doHalt;
+  assign div_halt = ctrl_fsm_i.halt_ex; // || scaiev.execute_doHalt;
   assign div_kill = ctrl_fsm_i.kill_ex || scaiev.execute_doKill;
 
 
