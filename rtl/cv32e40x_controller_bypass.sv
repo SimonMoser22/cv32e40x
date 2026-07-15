@@ -53,7 +53,6 @@ module cv32e40x_controller_bypass import cv32e40x_pkg::*;
   // From EX
   input  logic        csr_counter_read_i,         // CSR is reading a counter (EX).
   input  logic        csr_mnxti_read_i,           // CSR is reading mnxti (EX)
-  input  logic        rf_suppress_we_ex_i,        // Suppress forwarding if ISAX in EX does not set WrRD_valid on unstall
 
   // From WB
   input  logic        wb_ready_i,                 // WB stage is ready
@@ -97,9 +96,7 @@ module cv32e40x_controller_bypass import cv32e40x_pkg::*;
   logic                              jmpr_unqual_id;            // JALR in ID (not qualified with alu_en)
   logic                              tbljmp_unqual_id;          // Table jump in ID (not qualified with alu_en)
 
-  // In case of a SCAIE-V ISAX in EX rf_we_ex has to be be suppressed if the ISAX does not wish to
-  // write to the result register therefore not asserting WrRD_valid when unstalling
-  assign rf_we_ex = id_ex_pipe_i.rf_we && id_ex_pipe_i.instr_valid && !rf_suppress_we_ex_i;
+  assign rf_we_ex = id_ex_pipe_i.rf_we && id_ex_pipe_i.instr_valid;
   assign rf_we_wb = ex_wb_pipe_i.rf_we && ex_wb_pipe_i.instr_valid;
   assign lsu_en_wb = ex_wb_pipe_i.lsu_en && ex_wb_pipe_i.instr_valid;
 

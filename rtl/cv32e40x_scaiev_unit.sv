@@ -24,25 +24,21 @@ module cv32e40x_scaiev_unit
 
 );
 
-// valid when instruction is done, optionally data can be written then
 
-// id_ex_pipe_i.rf_we && scaiev_en signal that the current scaiev instruction is about to use RD
-
-// ready when no operation is ongoing, all results have been forwarded to wb
-// TODO: Verify that EX is stalled as long as ISAX is ongoing, so ready will be ignored anyways
+// always ready to accept an instruction,
+// SCAL has to stall EX stage if the instruction is not finished yet
 assign ready_o = 1'b1;
 
 always_comb begin : Rd_Assign
     result_o = 'x;
     valid_o = 1'b0;
     if (id_ex_pipe_i.scaiev_en && id_ex_pipe_i.rf_we) begin
-        // forward the result if the instruction uses WrRD, also assume that EX can be unstalled when WrRD happened
+        // forward the result if the instruction uses WrRD
+        // assume WrRD to be valid when EX unstalls
         result_o = scaiev.execute_RD;
-        valid_o = scaiev.execute_RD_valid;
-    
+        valid_o = 1'b1;
     end else if (id_ex_pipe_i.scaiev_en) begin
         // else simply set as valid
-        // TODO: verify that without the multi-cycle signals (RdInstageID, WrInStageID,...) SCAL stalls execute until ISAX is finished
         valid_o = 1'b1;
     end
 end
@@ -66,6 +62,5 @@ assign scaiev.execute_RS1 = id_ex_pipe_i.alu_operand_a;
 assign scaiev.execute_RS2 = id_ex_pipe_i.alu_operand_b;
 assign scaiev.execute_Instr = id_ex_pipe_i.instr.bus_resp.rdata;
 
-assign scaiev.execute_isSCAIEV_usesRD = id_ex_pipe_i.instr_valid && id_ex_pipe_i.scaiev_en && id_ex_pipe_i.rf_we;
 
 endmodule

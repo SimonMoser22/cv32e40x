@@ -122,7 +122,6 @@ module cv32e40x_controller import cv32e40x_pkg::*;
 
   input logic [REGFILE_NUM_READ_PORTS-1:0] rf_re_id_i,
   input rf_addr_t     rf_raddr_id_i[REGFILE_NUM_READ_PORTS],
-  input logic         rf_suppress_we_ex_i,
 
   input  logic        id_ready_i,               // ID stage is ready
   input  logic        id_valid_i,               // ID stage is done
@@ -274,7 +273,6 @@ module cv32e40x_controller import cv32e40x_pkg::*;
     // From EX
     .csr_counter_read_i         ( csr_counter_read_i       ),
     .csr_mnxti_read_i           ( csr_mnxti_read_i         ),
-    .rf_suppress_we_ex_i        ( rf_suppress_we_ex_i      ),
 
     // From WB
     .wb_ready_i                 ( wb_ready_i               ),
