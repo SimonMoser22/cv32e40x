@@ -50,15 +50,6 @@ interface scaiev_interface;
     logic         execute_doHalt;           // WrStall
     logic         execute_valid;
 
-    // SCAIE-V decoder signals advanced to EX
-    logic         execute_isSCAIEV_usesRD;  // instruction in EX is a SCAIE-V ISAX which uses WrRD
-
-
-
-    // Signals from/to writeback stage
-    logic [31: 0] writeback_PC;             // RdPC
-    logic [31: 0] writeback_Instr;
-
 
 
     modport core (
@@ -107,13 +98,7 @@ interface scaiev_interface;
         execute_Instr,
         execute_isKilled,
         execute_isHalted,
-        execute_valid,
-
-        execute_isSCAIEV_usesRD,
-
-        writeback_PC,
-        writeback_Instr
-    
+        execute_valid
     );
 
 
@@ -162,13 +147,7 @@ interface scaiev_interface;
         execute_Instr,
         execute_isKilled,
         execute_isHalted,
-        execute_valid,
-
-        execute_isSCAIEV_usesRD,
-
-        writeback_PC,
-        writeback_Instr
-    
+        execute_valid
     );
 
 

@@ -832,7 +832,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   assign scaiev.decode_RS2 = operand_b_fw;
   assign scaiev.decode_Instr = instr;
   assign scaiev.decode_isKilled = ctrl_fsm_i.kill_id;
-  assign scaiev.decode_isHalted = id_valid_core && !ex_ready_i;
+  assign scaiev.decode_isHalted = (id_valid_core && !ex_ready_i) || ctrl_fsm_i.halt_id || xif_waiting;
 
   // Because SCAL needs RdInStageValid to be set to do its decode magic we need to decouple the RdInStageValid 
   // from the stall logic. Otherwise we get a combinatorial loop back to SCAL if ID is stalled by the FSM

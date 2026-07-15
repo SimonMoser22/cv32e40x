@@ -57,6 +57,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
 
   // Register file forwarding signals (to ID)
   output logic [31:0] rf_wdata_o,
+  output logic        scaiev_suppress_we_o,
 
   // To IF: Jump and branch target and decision
   output logic        branch_decision_o,
@@ -140,6 +141,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   // SCAIE-V
   logic           scaiev_branch_decision;
   logic [31:0]    scaiev_branch_target;
+  logic           scaiev_we;
 
 
   logic instr_valid_internal;
@@ -371,6 +373,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
     .ready_o                ( scaiev_ready           ),
     .valid_o                ( scaiev_valid           ),
     .result_o               ( scaiev_result          ),
+    .we_o                   ( scaiev_we              ),  
 
     .branch_decision_o      ( scaiev_branch_decision ),
     .branch_target_o        ( scaiev_branch_target   ),
@@ -378,6 +381,8 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
     // SCAIEV internal interface
     .scaiev                 ( scaiev                 )
   );
+
+  assign scaiev_suppress_we_o = (id_ex_pipe_i.instr_valid && id_ex_pipe_i.scaiev_en && !scaiev_we);
 
   ///////////////////////////////////////
   // EX/WB Pipeline Register           //
@@ -437,10 +442,10 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
         ex_wb_pipe_o.abort_op    <= id_ex_pipe_i.abort_op; // MPU exceptions and watchpoint triggers have WB timing and will not impact ex_wb_pipe.abort_op
         // Deassert rf_we in case of illegal csr instruction or when the first half of a misaligned/split LSU goes to WB.
         // Also deassert if CSR was accepted both by eXtension if and pipeline
-        ex_wb_pipe_o.rf_we       <= (csr_is_illegal || lsu_split_i) ? 1'b0 : id_ex_pipe_i.rf_we;
+        ex_wb_pipe_o.rf_we       <= (csr_is_illegal || lsu_split_i || scaiev_suppress_we_o) ? 1'b0 : id_ex_pipe_i.rf_we;
         ex_wb_pipe_o.lsu_en      <= id_ex_pipe_i.lsu_en;
 
-        if (id_ex_pipe_i.rf_we) begin
+        if (id_ex_pipe_i.rf_we && !scaiev_suppress_we_o) begin
           ex_wb_pipe_o.rf_waddr <= id_ex_pipe_i.rf_waddr;
           if (!id_ex_pipe_i.lsu_en) begin
             ex_wb_pipe_o.rf_wdata <= rf_wdata_o;
@@ -566,7 +571,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic ex_valid_core;
   assign ex_valid_core = units_valid && instr_valid_internal;
   assign scaiev.execute_isKilled = ctrl_fsm_i.kill_ex;
-  assign scaiev.execute_isHalted = ex_valid_core && !wb_ready_i;
+  assign scaiev.execute_isHalted = (ex_valid_core && !wb_ready_i) || ctrl_fsm_i.halt_ex;
 
   // RdInStageValid determines when meaningful values can be read from the stage. This should not indicate a stages valid signal to the next stage
   // As in ID stage this is derived from the ex_valid_o, but without any halt conditions and without units_ready, as this would cause a deadlock

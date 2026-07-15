@@ -197,6 +197,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
   // Forwarding RF from EX
   logic [31:0] rf_wdata_ex;
+  logic        rf_suppress_we_ex;
 
   // Detect last_op
   logic        last_op_if;
@@ -638,6 +639,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // Register file forwarding
     .rf_wdata_o                 ( rf_wdata_ex                  ),
+    .scaiev_suppress_we_o       ( rf_suppress_we_ex            ),
 
     // LSU interface
     .lsu_valid_i                ( lsu_valid_0                  ),
@@ -798,10 +800,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .clic_pa_i                  ( csr_clic_pa                  ),
 
     .last_op_o                  ( last_op_wb                   ),
-    .abort_op_o                 ( abort_op_wb                  ),
-
-    // SCAIEV internal interface
-    .scaiev                     ( scaiev                       )
+    .abort_op_o                 ( abort_op_wb                  )
   );
 
   //////////////////////////////////////
@@ -1013,7 +1012,8 @@ module cv32e40x_core import cv32e40x_pkg::*;
     // Register File read, write back and forwards
     .rf_re_id_i                     ( rf_re_id               ),
     .rf_raddr_id_i                  ( rf_raddr_id            ),
-
+    .rf_suppress_we_ex_i            ( rf_suppress_we_ex      ),
+    
     // Fencei flush handshake
     .fencei_flush_ack_i             ( fencei_flush_ack_i     ),
     .fencei_flush_req_o             ( fencei_flush_req_o     ),
