@@ -689,7 +689,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   end
 
   // We assume here that ID is properly stalled (by SCAL or glue module) until scaiev.decode_jmp_target_valid becomes high
-  assign id_jmp_o     = (alu_en && alu_jmp) || (scaiev_en && scaiev_jmp && scaiev.decode_jmp_target_valid);
+  assign id_jmp_o     = ((alu_en && alu_jmp) || (scaiev_en && scaiev_jmp && scaiev.decode_jmp_target_valid)) && ex_ready_i;
   assign alu_jmpr_o   = alu_jmpr;
 
   assign csr_en_raw_o = csr_en_raw;
